@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="booking_order_quotation_tree" model="ir.ui.view">
+            <field name="name">quotation.tree.retail.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="type">tree</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree"/>
+            <field name="arch" type="xml">
+                <field name="state" position="after">
+                    <field name="book_order"/>
+                    <field name="delivery_phone"/>
+                    <field name="delivery_date"/>
+                    <field name="delivery_address"/>
+                    <field name="delivered_date"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="booking_order_sale_tree" model="ir.ui.view">
+            <field name="name">sale.order.tree.retail.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="type">tree</field>
+            <field name="inherit_id" ref="sale.view_order_tree"/>
+            <field name="arch" type="xml">
+                <field name="state" position="after">
+                    <field name="book_order"/>
+                    <field name="ean13"/>
+                    <field name="delivery_phone"/>
+                    <field name="delivery_date"/>
+                    <field name="delivery_address"/>
+                    <field name="delivered_date"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="booking_order_sale_form" model="ir.ui.view">
+            <field name="name">sale.order.form.retail.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='payment_term_id']" position="after">
+                    <field name="book_order" readonly="1"/>
+                    <field name="ean13" attrs="{'invisible': [('book_order', '=', False)]}"/>
+                    <field name="delivery_phone" attrs="{'invisible': [('book_order', '=', False)]}"/>
+                    <field name="delivery_address" attrs="{'invisible': [('book_order', '=', False)]}"/>
+                    <field name="delivered_date" attrs="{'invisible': [('book_order', '=', False)]}"/>
+                    <field name="payment_partial_amount" attrs="{'invisible': [('book_order', '=', False)]}"/>
+                    <field name="payment_partial_method_id" attrs="{'invisible': [('book_order', '=', False)]}"/>
+                    <field name="payment_partial_journal_id" attrs="{'invisible': [('book_order', '=', False)]}"/>
+                    <field name="signature" widget='image' readonly="1"
+                           attrs="{'invisible': [('book_order', '=', False)]}"/>
+                </xpath>
+                <xpath expr="//field[@name='order_line']//tree/field[@name='state']" position="before">
+                    <field name="variant_ids" widget="many2many_tags"/>
+                    <field name="pos_note"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_book_orders" model="ir.actions.act_window">
+            <field name="name">Booked orders</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_id" ref="sale.view_quotation_tree"/>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+            <field name="search_view_id" ref="sale.sale_order_view_search_inherit_quotation"/>
+            <field name="domain">[('book_order', '=', True)]</field>
+        </record>
+
+        <menuitem id="menu_action_book_orders"
+                  action="action_book_orders"
+                  parent="sale.sale_order_menu"
+                  sequence="10" groups="sales_team.group_sale_salesman"/>
+
+    </data>
+</odoo>
