@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="DiscountWidget">
+        <div class="numpad numpad-discount" style="margin-left: -8px">
+            <t t-foreach="widget.pos.discounts || []" t-as="discount">
+                <button class="input-button number-char" t-att-id="discount.id">
+                    Disc
+                    <t t-if="discount.type == 'percent'">
+                        <t t-esc="discount.amount"/>%</t>
+                    <t t-if="discount.type !== 'percent'">
+                        <t t-esc="widget.format_currency(discount.amount)"/>
+                    </t>
+                </button>
+            </t>
+            <button class="input-button number-char" id="0">Disc 0%</button>
+            <button class="input-button numpad-backspace">
+                <img style="pointer-events: none;background: #fff;padding: 10px;border-radius: 65%;" src="/point_of_sale/static/src/img/backspace.png" width="24" height="21" alt="Backspace"/>
+            </button>
+        </div>
+    </t>
+
+</templates>

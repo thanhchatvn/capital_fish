@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="ServiceChargeWidget">
+        <div class="numpad numpad-discount" style="margin-left: -8px">
+            <t t-foreach="widget.pos.services_charge || []" t-as="service">
+                <button class="input-button number-char" t-att-id="service.id">
+                    Charge
+                    <t t-if="service.type == 'percent'">
+                        <t t-esc="service.amount"/>%</t>
+                    <t t-if="service.type !== 'percent'">
+                        <t t-esc="widget.format_currency(service.amount)"/>
+                    </t>
+                </button>
+            </t>
+            <button class="input-button numpad-backspace">
+                <img style="pointer-events: none;background: #fff;padding: 10px;border-radius: 65%;" src="/point_of_sale/static/src/img/backspace.png" width="24" height="21" alt="Backspace"/>
+            </button>
+        </div>
+    </t>
+
+</templates>

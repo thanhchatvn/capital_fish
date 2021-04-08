@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-extend="PaymentScreen-Paymentmethods">
+        <t t-jquery=".paymentmethods" t-operation="replace">
+            <p class="label" style="color: black;font-size: 20px;">Payment Method</p>
+            <t t-set="order" t-value="widget.pos.get_order()"/>
+            <div class='paymentmethods'>
+                <t t-foreach="widget.pos.payment_methods" t-as="payment_method">
+                    <t t-if="order">
+                        <t t-set="change" t-value="order.get_change()"/>
+                        <t t-set="is_return" t-value="order.is_return"/>
+                        <t t-set="client" t-value="order.get_client()"/>
+                        <t t-set="client_credit_balance" t-value="0"/>
+                        <t t-set="client_wallet_amount" t-value="0"/>
+                        <t t-if="client">
+                            <t t-set="client_credit_balance" t-value="client.balance"/>
+                        </t>
+                        <t t-if="client">
+                            <t t-set="client_wallet_amount" t-value="client.wallet"/>
+                        </t>
+                        <t t-if="payment_method.pos_method_type == 'default' or !payment_method.pos_method_type">
+                            <span class="left_button paymentmethod" t-att-data-id="payment_method.id">
+                                <div class="button-icon">
+                                    <img src="/pos_retail/static/src/icons/payment.png" class="pos_logo"/>
+                                </div>
+                                <div class="button-name">
+                                    <t t-esc="payment_method.name" />
+                                    <t t-if="payment_method.journal and payment_method.journal.currency_id">
+                                        (<t t-esc="payment_method.journal.currency_id[1]"/>)
+                                    </t>
+                                </div>
+                            </span>
+                        </t>
+                        <t t-if="payment_method.pos_method_type == 'credit' and client_credit_balance &gt; 0">
+                            <span class="left_button paymentmethod" t-att-data-id="payment_method.id">
+                                <div class="button-icon">
+                                    <img src="/pos_retail/static/src/icons/payment.png" class="pos_logo"/>
+                                </div>
+                                <div class="button-name">
+                                    <t t-esc="payment_method.name" />
+                                    <t t-if="payment_method.journal and payment_method.journal.currency_id">
+                                        (<t t-esc="payment_method.journal.currency_id[1]"/>)
+                                    </t>
+                                    <t t-esc="widget.format_currency(client_credit_balance, 'Product Price')"/>
+                                </div>
+                            </span>
+                        </t>
+                        <t t-if="payment_method.pos_method_type == 'wallet' and client_wallet_amount &gt; 0">
+                            <span class="left_button paymentmethod" t-att-data-id="payment_method.id">
+                                <div class="button-icon">
+                                    <img src="/pos_retail/static/src/icons/payment.png" class="pos_logo"/>
+                                </div>
+                                <div class="button-name">
+                                    <t t-esc="payment_method.name" />
+                                    <t t-if="payment_method.journal and payment_method.journal.currency_id">
+                                        (<t t-esc="payment_method.journal.currency_id[1]"/>)
+                                    </t>
+                                    <t t-esc="widget.format_currency(client_wallet_amount, 'Product Price')"/>
+                                </div>
+                            </span>
+                        </t>
+                    </t>
+                </t>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="journal_list">
+        <div class='paymentmethods'>
+            <t t-if="widget.pos.get_order() and widget.pos.get_order().sale_journal and widget.pos.invoice_journals">
+                <t t-foreach="widget.pos.invoice_journals" t-as="journal">
+                    <span t-attf-class='left_button journal #{ widget.pos.get_order().sale_journal and widget.pos.get_order().sale_journal == journal.id ? "highlight" : ""} ' t-att-data-id="journal['id']">
+                        <div class="button-icon">
+                            <i class="fa fa-book"/>
+                        </div>
+                        <div class="button-name">
+                            <t t-esc="journal['name']"/>
+                        </div>
+                    </span>
+                </t>
+            </t>
+        </div>
+    </t>
+
+    <t t-extend="PaymentScreen-Paymentlines"> <!-- add icon button update rounding amount -->
+        <t t-jquery="t[t-esc*='line.name']" t-operation="after">
+            <t t-if="line.voucher_code">
+                <li class="voucher_code">
+                    Added Voucher: <i class="fa fa-gift"/>
+                    <t t-esc='line.voucher_code' />
+                </li>
+            </t>
+        </t>
+        <t t-jquery="td[class*='col-name']" t-operation="after">
+            <t t-if="widget.pos.config.payment_reference">
+                <td class='payment-ref-button btn btn-success' t-att-data-cid='line.cid' aria-label="Add Reference" title="Add Reference">
+                    <i class='fa fa-edit'/>
+                    <t t-if="line.ref">
+                        Ref: <t t-esc="line.ref"/>
+                    </t>
+                    <t t-else="">
+                        Ref: N/A
+                    </t>
+
+                </td>
+            </t>
+        </t>
+    </t>
+
+    <t t-extend="PaymentScreenWidget">
+        <t t-jquery="section[class*='payment-numpad']" t-operation="replace">
+            <section class="payment-numpad pads"/>
+        </t>
+        <t t-jquery="span[class*='button back']" t-operation="replace"/>
+        <t t-jquery="span[class*='button next']" t-operation="replace"/>
+        <t t-jquery="section[class*='payment-numpad']" t-operation="after">
+            <t t-set="order" t-value="widget.pos.get_order()"/>
+            <section>
+                <span class='left_button button_text button back back_products_screen' title="Back Products Screen, Keyboard Event: b or ESC">
+                    <div class="button-icon">
+                        <img src="/pos_retail/static/src/icons/back.png" class="pos_logo"/>
+                    </div>
+                    <div class="button-name">
+                        Back
+                    </div>
+                </span>
+                <t t-if="widget.pos.config.paid_full">
+                    <span class='left_button button_text button paid_full'>
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/confirm.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Paid Full
+                        </div>
+                    </span>
+                </t>
+                <t t-if="widget.pos.config.paid_partial and order">
+                    <span class='left_button button_text button paid_partial' title="Payment one part of Order Amount, Keyboard Event: p">
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/save.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Partial Payment
+                        </div>
+                    </span>
+                </t>
+                <t t-if="widget.pos.config.allow_cashier_update_print_number">
+                    <span class='left_button button_text button print_receipt_number' title="Receipt number will print">
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/tip.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Number of Receipt: <t t-esc="widget.pos.config.print_number"/>
+                        </div>
+                    </span>
+                </t>
+                <t t-if="widget.pos.config.category_wise_receipt">
+                    <span t-attf-class="left_button button_text button category_wise_receipt  #{widget.pos.config.category_wise_receipt ? 'highlight' : '' }" title="Wise Product by Category">
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/tip.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Wise Category Receipt
+                        </div>
+                    </span>
+                </t>
+                <t t-if="widget.pos.config.allow_ticket_font_size">
+                    <span class="left_button button_text button ticket_font_size" title="Font Size of Bill">
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/tip.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Font Size Bill <t t-esc="widget.pos.config.ticket_font_size"/>
+                        </div>
+                    </span>
+                </t>
+                <t t-if="widget.pos.config.barcode_receipt">
+                    <span t-attf-class="left_button button_text button barcode-receipt  #{widget.pos.config.barcode_receipt ? 'highlight' : '' }" title="Display Barcode on Receipt">
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/tip.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Display Barcode
+                        </div>
+                    </span>
+                </t>
+                <t t-if="widget.pos.config.auto_nextscreen_when_validate_payment">
+                    <span t-attf-class="left_button button_text button auto_nextscreen_when_validate_payment  #{widget.pos.config.auto_nextscreen_when_validate_payment ? 'highlight' : '' }" title="Auto next screen when validate order">
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/tip.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Auto Next Screen
+                        </div>
+                    </span>
+                </t>
+                <t t-if="widget.pos.config.auto_print_web_receipt">
+                    <span t-attf-class="left_button button_text button auto_print_web_receipt  #{widget.pos.config.auto_print_web_receipt ? 'highlight' : '' }" title="Auto print receipt viva web">
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/tip.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Auto popup Print
+                        </div>
+                    </span>
+                </t>
+                <span class='left_button button_text button next' title="Validate Payment, Keyboard Event: Space">
+                    <div class="button-icon">
+                        <img src="/pos_retail/static/src/icons/next.png" class="pos_logo"/>
+                    </div>
+                    <div class="button-name">
+                        Validate
+                    </div>
+                </span>
+                <t t-if="widget.pos.config.validate_order_without_receipt">
+                    <span class='left_button button_text button next_without_print_receipt' title="Validate Order without Print Receipt">
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/tip.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Validate without Print Receipt
+                        </div>
+                    </span>
+                </t>
+            </section>
+        </t>
+        <t t-jquery=".right-content" t-operation="append">
+            <t t-if="widget.quickly_datas and widget.quickly_datas.length > 0">
+                <section class='payment-buttons' style="width: 100%">
+                    <p class="label" style="text-align: left;color: black; font-weight: bold">Quickly add Money</p>
+                    <t t-foreach="widget.quickly_datas" t-as="quickly">
+                        <span class="left_button quickly-payment" t-att-data-id="quickly.id">
+                            <div class="button-icon">
+                                <img src="/pos_retail/static/src/icons/cashin.png" class="pos_logo"/>
+                            </div>
+                            <div class="button-name">
+                                <t t-esc="widget.format_currency(quickly.amount)"/>
+                            </div>
+                        </span>
+                    </t>
+                </section>
+            </t>
+            <t t-if="order and order.get_note() and !widget.pos.config.replace_payment_screen">
+                <section class='set-note'>
+                    <div class="order-note-information">
+                        <div class="title">Order Notes</div>
+                        <div class="order-note">
+                            <t t-esc="order.get_note() || ''"/>
+                        </div>
+                    </div>
+                </section>
+                <section class='signature-order'>
+                    <div class="order-note-information">
+                        <div class="title">Customer Signature</div>
+                        <img class="product-img signature"
+                             t-att-src="order.get_signature() || ''"
+                             style="max-height:400px;max-width:100px"
+                        />
+                    </div>
+                </section>
+            </t>
+        </t>
+        <t t-jquery="div[class*='paymentmethods-container']" t-operation="after">
+            <t t-if="widget.pos.config.invoice_journal_ids and widget.pos.config.invoice_journal_ids.length > 0">
+                <div class='invoice_journals'>
+                    <p class="label" style="color: black;font-size: 20px;">Invoice Journal</p>
+                </div>
+            </t>
+        </t>
+        <t t-jquery="div[class*='js_set_customer']" t-operation="after">
+            <t t-if="widget.pos.get_order()">
+                <t t-set="order" t-value="widget.pos.get_order()"/>
+                <t t-if="widget.pos.config.send_invoice_email">
+                    <span t-attf-class='left_button send_invoice_email #{ order.is_email_invoice() ? "highlight" : ""} '>
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/email.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Mail Invoice
+                        </div>
+                    </span>
+                </t>
+                <t t-if="widget.pos.config.signature_order">
+                    <span class="left_button js_signature_order">
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/signature.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Sign order
+                        </div>
+                    </span>
+                </t>
+                <t t-if="widget.pos.config.note_order">
+                    <span class="left_button add_note">
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/note.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Change Note
+                        </div>
+                    </span>
+                </t>
+                <t t-if="order.order_has_promotion_applied()">
+                    <span t-attf-class='left_button button_remove_promotion #{ order.order_has_promotion_applied() ? "highlight" : ""} '>
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/trash.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Remove Promotions
+                        </div>
+                    </span>
+                </t>
+                <t t-if="widget.pos.promotion_ids and widget.pos.promotion_ids.length and !order.order_has_promotion_applied()">
+                    <span t-attf-class='left_button button_promotion #{ !order.order_has_promotion_applied() ? "highlight" : ""} '>
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/trash.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Add promotions
+                        </div>
+                    </span>
+                </t>
+            </t>
+        </t>
+        <t t-jquery="div[class*='js_set_customer']" t-operation="replace">
+            <t t-set="order" t-value="widget.pos.get_order()"/>
+            <span class="left_button js_set_customer">
+                <div class="button-icon">
+                    <img src="/pos_retail/static/src/icons/users.png" class="pos_logo"/>
+                </div>
+                <div class="button-name js_customer_name button_text">
+                    <t t-if="widget.pos.get_client()">
+                        <t t-esc="widget.pos.get_client().name" />
+                    </t>
+                    <t t-if="!widget.pos.get_client()">
+                        Customer
+                    </t>
+                </div>
+            </span>
+            <t t-if="order">
+                <span class="left_button input_voucher">
+                    <div class="button-icon">
+                        <img src="/pos_retail/static/src/icons/voucher.png" class="pos_logo"/>
+                    </div>
+                    <div class="button-name">
+                        Input (scan) voucher
+                    </div>
+                </span>
+                <t t-if="order.get_total_with_tax() &lt; 0">
+                    <span t-attf-class='left_button js_create_voucher #{ order.get_order_is_create_voucher() ? "highlight" : ""} '>
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/voucher.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Create voucher
+                        </div>
+                    </span>
+                </t>
+            </t>
+            <t t-if="order and order.get_total_with_tax()  &lt; 0">
+                <span t-attf-class='left_button add_credit #{ order.is_add_credit() ? "highlight" : ""} '>
+                    <div class="button-icon">
+                        <img src="/pos_retail/static/src/icons/credit_card.png" class="pos_logo"/>
+                    </div>
+                    <div class="button-name">
+                        Add credit
+                    </div>
+                </span>
+            </t>
+            <t t-if="widget.pos.config.wallet">
+                <span class="left_button add_wallet">
+                    <div class="button-icon">
+                        <img src="/pos_retail/static/src/icons/wallet.png" class="pos_logo"/>
+                    </div>
+                    <div class="button-name">
+                        Add wallet
+                    </div>
+                </span>
+            </t>
+        </t>
+        <t t-jquery="div[class*='js_email']" t-operation="replace">
+            <span class='left_button js_email'>
+                <div class="button-icon">
+                    <i class="fa fa-inbox"/>
+                </div>
+                <div class="button-name">
+                    Email
+                </div>
+            </span>
+        </t>
+        <t t-jquery="t[t-if*='widget.pos.config.module_account']" t-operation="replace">
+            <t t-if='widget.pos.get_order()'>
+                <t t-set="order" t-value="widget.pos.get_order()"/>
+                <span t-attf-class='left_button js_invoice #{ order.is_to_invoice() ? "highlight" : ""} '>
+                    <div class="button-icon">
+                        <img src="/pos_retail/static/src/icons/invoice.png" class="pos_logo"/>
+                    </div>
+                    <div class="button-name">
+                        Invoice
+                    </div>
+                </span>
+            </t>
+        </t>
+        <t t-jquery="t[t-if*='widget.pos.config.tip_product_id']" t-operation="replace">
+            <t t-if='widget.pos.config.tip_product_id'>
+                <t t-set="order" t-value="widget.pos.get_order()"/>
+                <t t-if="order and order.get_total_with_tax() > 0">
+                    <span class="left_button js_tip">
+                        <div class="button-icon">
+                            <img src="/pos_retail/static/src/icons/tip.png" class="pos_logo"/>
+                        </div>
+                        <div class="button-name">
+                            Tip
+                        </div>
+                    </span>
+                </t>
+            </t>
+        </t>
+        <t t-jquery="t[t-if*='widget.pos.config.iface_cashdrawer']" t-operation="replace">
+            <t t-if='widget.pos.config.iface_cashdrawer'>
+                <span class="left_button js_cashdrawer">
+                    <div class="button-icon">
+                        <img src="/pos_retail/static/src/icons/open_cashbox.png" class="pos_logo"/>
+                    </div>
+                    <div class="button-name">
+                        Open Cashbox
+                    </div>
+                </span>
+            </t>
+        </t>
+    </t>
+
+
+</templates>

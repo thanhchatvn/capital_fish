@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="print_bill_widget">
+        <div class="oe_status js_synch" title="Print Bill">
+            <div class="js_connected oe_icon">
+                <i class='fa fa-fw fa-print' role="img" aria-label="Print Bill without Payment" title="Print Bill without Payment"></i>
+            </div>
+        </div>
+    </t>
+
+</templates>
