@@ -1,6 +1,0 @@
-- [x] Remove invoice
-- [x] Remove api.multi
-- [x] Remove api.one
-- [x] Remove api.model_cr
-- [x] Remove Cash box in
-- [x] Partner no difference customer and supplier

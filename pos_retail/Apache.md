@@ -1,2 +1,0 @@
-LimitRequestFieldSize 64000and 
-LimitRequestLine 64000
